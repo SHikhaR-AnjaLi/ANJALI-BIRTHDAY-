@@ -4,6 +4,7 @@ import { MeltingAnimation } from './components/MeltingAnimation';
 import { BirthdayMessage } from './components/BirthdayMessage';
 import { ScrollableContent } from './components/ScrollableContent';
 import { Letter } from './components/Letter';
+import  { BackgroundMusic } from './components/BackgroundMusic';
 import { motion, AnimatePresence } from 'framer-motion';
 
 function App() {
@@ -20,6 +21,8 @@ function App() {
 
   return (
     <div className="relative w-full min-h-screen bg-black overflow-hidden">
+    {/* Background music - plays when countdown is complete */}
+      <BackgroundMusic playing={currentStep !== 'countdown'} />
       {/* Background stars effect */}
       <div 
         className="fixed inset-0 z-0 before:fixed before:inset-0 before:bg-black before:opacity-50"

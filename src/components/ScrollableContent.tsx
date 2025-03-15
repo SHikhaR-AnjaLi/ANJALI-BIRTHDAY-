@@ -6,7 +6,14 @@ export const ScrollableContent: React.FC = () => {
   const handleSwipeLeft = () => {
     // Get the letter container and make it visible
     const letterContainer = document.getElementById('letterContainer');
-    if (letterContainer) {
+    const scrollableContent = document.querySelector('.scrollable-content-container');
+    
+    if (letterContainer && scrollableContent) {
+      // Hide the scrollable content
+      scrollableContent.classList.add('opacity-0');
+      scrollableContent.classList.add('pointer-events-none');
+      
+      // Show the letter container
       letterContainer.classList.remove('opacity-0');
       letterContainer.classList.add('opacity-100');
       letterContainer.classList.remove('pointer-events-none');
@@ -27,10 +34,27 @@ export const ScrollableContent: React.FC = () => {
     }
   };
 
+  // Handle swipe right (when user goes back from letter to main content)
+  const handleSwipeRight = () => {
+    const letterContainer = document.getElementById('letterContainer');
+    const scrollableContent = document.querySelector('.scrollable-content-container');
+    
+    if (letterContainer && scrollableContent) {
+      // Hide the letter container
+      letterContainer.classList.add('opacity-0');
+      letterContainer.classList.add('pointer-events-none');
+      
+      // Show the scrollable content again
+      scrollableContent.classList.remove('opacity-0');
+      scrollableContent.classList.remove('pointer-events-none');
+    }
+  };
+
   // Add swipe detection
   useEffect(() => {
     const container = document.querySelector('.scrollable-content-container');
-    if (!container) return;
+    const letterContainer = document.getElementById('letterContainer');
+    if (!container || !letterContainer) return;
     
     let touchStartX = 0;
     let touchEndX = 0;
@@ -51,20 +75,39 @@ export const ScrollableContent: React.FC = () => {
       }
     };
     
+    // Add event listeners for letter container (to handle swipe right to go back)
+    const handleLetterTouchStart = (e: TouchEvent) => {
+      touchStartX = e.touches[0].clientX;
+    };
+    
+    const handleLetterTouchEnd = (e: TouchEvent) => {
+      touchEndX = e.changedTouches[0].clientX;
+      // Detect right swipe (end - start > 0 means swipe right)
+      if (touchEndX - touchStartX > 50) {
+        handleSwipeRight();
+      }
+    };
+    
     // Add keyboard support for testing
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'ArrowLeft') {
         handleSwipeLeft();
+      } else if (e.key === 'ArrowRight') {
+        handleSwipeRight();
       }
     };
     
     container.addEventListener('touchstart', handleTouchStart);
     container.addEventListener('touchend', handleTouchEnd);
+    letterContainer.addEventListener('touchstart', handleLetterTouchStart);
+    letterContainer.addEventListener('touchend', handleLetterTouchEnd);
     window.addEventListener('keydown', handleKeyDown);
     
     return () => {
       container.removeEventListener('touchstart', handleTouchStart);
       container.removeEventListener('touchend', handleTouchEnd);
+      letterContainer.removeEventListener('touchstart', handleLetterTouchStart);
+      letterContainer.removeEventListener('touchend', handleLetterTouchEnd);
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
@@ -105,7 +148,7 @@ export const ScrollableContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 scrollable-content-container">
+    <div className="min-h-screen flex items-center justify-center p-4 md:p-8 scrollable-content-container transition-opacity duration-300">
       <motion.div
         className="max-w-4xl w-full space-y-12 text-center"
         initial={{ opacity: 0, y: 50 }}
